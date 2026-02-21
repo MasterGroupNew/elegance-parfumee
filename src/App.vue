@@ -2,12 +2,13 @@
   <div>
     <!-- Header masqué si admin -->
     <Header v-if="!estAdmin" @ouvrir-panier="panierOuvert = true" />
-    
+    <!-- Bandeau pub en haut de tout -->
+    <BandeauPub />
     <RouterView />  <!-- 👈 remplace HomeView, affiche la bonne page selon l'URL -->
-    
+
     <!-- Footer masqué si admin -->
     <Footer v-if="!estAdmin" />
-    
+
     <!-- CartSidebar masqué si admin -->
     <CartSidebar v-if="!estAdmin" :isOpen="panierOuvert" @fermer="panierOuvert = false" />
   </div>
@@ -17,9 +18,10 @@
 import Header from './components/Header.vue'
 import CartSidebar from './components/CartSidebar.vue'
 import Footer from './components/Footer.vue'
+import BandeauPub from './components/BandeauPub.vue'
 
 export default {
-  components: { Header, CartSidebar, Footer },
+  components: { Header, CartSidebar,BandeauPub, Footer },
   data() {
     return {
       panierOuvert: false

@@ -81,7 +81,7 @@ import { useAuthStore } from '../stores/authStore'
 import {
   SprayCan, LayoutDashboard, ShoppingBag,
   Users, Store, LogOut, Menu, Droplets,
-  Tag, ShieldCheck, BarChart2, Settings  // ← nouveaux
+  Tag, ShieldCheck, BarChart2, Settings,Megaphone   // ← nouveaux
 } from 'lucide-vue-next'
 
 export default {
@@ -98,7 +98,8 @@ export default {
     Tag,
     ShieldCheck,
     BarChart2,
-    Settings
+    Settings,
+    Megaphone
   },
   data() {
     return {
@@ -111,6 +112,7 @@ export default {
         { path: '/admin/utilisateurs', label: 'Utilisateurs', icone: 'Users' },
         { path: '/admin/administrateurs', label: 'Administrateurs', icone: 'ShieldCheck' },
         { path: '/admin/statistiques', label: 'Statistiques', icone: 'BarChart2' },
+        { path: '/admin/publicites', label: 'Publicités', icone: 'Megaphone' },
         { path: '/admin/parametres', label: 'Paramètres', icone: 'Settings' }
       ]
     }
@@ -134,6 +136,7 @@ export default {
         '/admin/utilisateurs': 'Gestion des utilisateurs',
         '/admin/administrateurs': 'Administrateurs',
         '/admin/statistiques': 'Statistiques',
+        '/admin/publicites': 'Gestion des publicités',
         '/admin/parametres': 'Paramètres'
       }
       return titres[this.$route.path] || 'Admin'
