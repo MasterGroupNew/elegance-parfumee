@@ -25,7 +25,8 @@
         </div>
 
         <!-- Produits -->
-        <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+        <!-- Produits -->
+        <div v-else class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-4 md:gap-6">
           <ProductCard v-for="product in products" :key="product._id" :product="product"
             @ajouter-panier="ajouterAuPanier" @voir-details="voirDetails" />
         </div>
@@ -124,11 +125,11 @@
 import ProductCard from '../components/ProductCard.vue'
 import { useCartStore } from '../stores/cartStore'
 
-import {Loader, ShoppingCart,X,Tag} from 'lucide-vue-next'
+import { Loader, ShoppingCart, X, Tag } from 'lucide-vue-next'
 
 export default {
   name: 'HomeView',
-  components: { ProductCard,  ShoppingCart,Loader,X,Tag},
+  components: { ProductCard, ShoppingCart, Loader, X, Tag },
   data() {
     return {
       products: [],

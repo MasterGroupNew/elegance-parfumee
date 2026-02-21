@@ -1,6 +1,6 @@
 <template>
   <div>
-    <!-- Hero de la page -->
+    <!-- Hero -->
     <section class="text-white py-16"
       :style="{ background: `linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url(${heroImage})`, backgroundSize: 'cover', backgroundPosition: 'center' }">
       <div class="container mx-auto px-4 text-center">
@@ -15,67 +15,84 @@
 
         <!-- Chargement -->
         <div v-if="chargement" class="text-center py-8">
-          <i class="fas fa-spinner fa-spin text-4xl text-purple-600 mb-3"></i>
+          <Loader class="w-10 h-10 animate-spin text-purple-600 mx-auto mb-3" />
           <p class="text-gray-600">Chargement des produits...</p>
         </div>
 
         <!-- Aucun produit -->
         <div v-else-if="produits.length === 0" class="text-center py-8">
-          <i class="fas fa-box-open text-4xl text-gray-300 mb-3"></i>
+          <PackageOpen class="w-16 h-16 text-gray-300 mx-auto mb-3" />
           <p class="text-gray-500">Aucun produit disponible dans cette catégorie</p>
         </div>
 
         <!-- Liste produits -->
-        <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-          <ProductCard v-for="product in produits" :key="product._id" :product="product"
-            @ajouter-panier="ajouterAuPanier" @voir-details="voirDetails" />
+        <div v-else class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-4 md:gap-6">
+          <ProductCard
+            v-for="product in produits"
+            :key="product._id"
+            :product="product"
+            @ajouter-panier="ajouterAuPanier"
+            @voir-details="voirDetails"
+          />
         </div>
 
       </div>
     </section>
 
-
     <!-- Modal Détails Produit -->
-    <div v-if="produitSelectionne" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4"
-      style="z-index: 9999; top: 0; left: 0; right: 0; bottom: 0; display: flex;" @click.self="fermerModal">
+    <div
+      v-if="produitSelectionne"
+      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4"
+      style="z-index: 9999;"
+      @click.self="fermerModal"
+    >
       <div class="bg-white rounded-lg shadow-xl max-w-4xl w-full overflow-auto max-h-[90vh]">
+
+        <!-- Header modal -->
         <div class="flex justify-between items-center p-6 border-b sticky top-0 bg-white">
           <h3 class="text-2xl font-bold text-gray-800">Détails du produit</h3>
           <button @click="fermerModal" class="text-gray-500 hover:text-gray-700" type="button">
-            <i class="fas fa-times text-2xl"></i>
+            <X class="w-6 h-6" />
           </button>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 p-6">
-          <img :src="produitSelectionne.imagePath || 'https://via.placeholder.com/400'" :alt="produitSelectionne.nom"
-            class="w-full h-80 object-cover rounded-lg shadow-md">
+          <img
+            :src="produitSelectionne.imagePath || 'https://via.placeholder.com/400'"
+            :alt="produitSelectionne.nom"
+            class="w-full h-80 object-cover rounded-lg shadow-md"
+          >
           <div>
             <h2 class="text-3xl font-bold text-gray-800 mb-2">{{ produitSelectionne.nom }}</h2>
-            <p class="text-purple-600 font-medium mb-4">
-              <i class="fas fa-tag mr-1"></i>
+            <p class="text-purple-600 font-medium mb-4 flex items-center gap-1">
+              <Tag class="w-4 h-4" />
               {{ produitSelectionne.categorie?.nom || 'Non catégorisé' }}
             </p>
             <p class="text-3xl font-bold text-gray-800 mb-6">
               {{ produitSelectionne.prix.toLocaleString('fr-FR') }} FCFA
             </p>
             <p class="text-gray-600 leading-relaxed mb-6">
-              {{ produitSelectionne.description || 'Une fragrance exceptionnelle qui révèle votre personnalité unique.'
-              }}
+              {{ produitSelectionne.description || 'Une fragrance exceptionnelle qui révèle votre personnalité unique.' }}
             </p>
             <div class="flex gap-3">
-              <button @click="ajouterAuPanierEtFermer"
-                class="flex-1 bg-purple-600 hover:bg-purple-700 text-white py-3 px-6 rounded-lg font-medium transition"
-                type="button">
-                <i class="fas fa-cart-shopping mr-2"></i>Ajouter au panier
+              <button
+                @click="ajouterAuPanierEtFermer"
+                class="flex-1 bg-purple-600 hover:bg-purple-700 text-white py-3 px-6 rounded-lg font-medium transition flex items-center justify-center gap-2"
+                type="button"
+              >
+                <ShoppingCart class="w-5 h-5" />Ajouter au panier
               </button>
-              <button @click="fermerModal"
+              <button
+                @click="fermerModal"
                 class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 py-3 px-6 rounded-lg font-medium transition"
-                type="button">
+                type="button"
+              >
                 Fermer
               </button>
             </div>
           </div>
         </div>
+
       </div>
     </div>
 
@@ -85,15 +102,16 @@
 <script>
 import ProductCard from './ProductCard.vue'
 import { useCartStore } from '../stores/cartStore'
+import { Loader, PackageOpen, X, Tag, ShoppingCart } from 'lucide-vue-next'
 
 export default {
   name: 'ProductsPage',
-  components: { ProductCard },
+  components: { ProductCard, Loader, PackageOpen, X, Tag, ShoppingCart },
   props: {
     titre: String,
     description: String,
     heroImage: String,
-    genre: String  // 'Homme', 'Femme', 'Unisex', ou null pour tout
+    genre: String
   },
   data() {
     return {
@@ -109,7 +127,6 @@ export default {
     async chargerProduits() {
       try {
         let url = 'https://luxeparfum-backend.onrender.com/api/products/get_product'
-
         if (this.genre) {
           url = `https://luxeparfum-backend.onrender.com/api/products/genre/${this.genre}`
         }
@@ -117,7 +134,6 @@ export default {
         const response = await fetch(url)
         const data = await response.json()
 
-        // 👇 Sécurisation : on vérifie que c'est bien un tableau
         if (Array.isArray(data)) {
           this.produits = data
         } else if (data.products) {
@@ -135,10 +151,12 @@ export default {
         this.chargement = false
       }
     },
+
     ajouterAuPanier(product) {
       const cartStore = useCartStore()
       cartStore.ajouterProduit(product)
     },
+
     voirDetails(product) {
       this.produitSelectionne = product
     },
@@ -146,6 +164,7 @@ export default {
     fermerModal() {
       this.produitSelectionne = null
     },
+
     ajouterAuPanierEtFermer() {
       if (this.produitSelectionne) {
         this.ajouterAuPanier(this.produitSelectionne)
