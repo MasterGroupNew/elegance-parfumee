@@ -4,7 +4,7 @@
 
       <!-- Logo -->
       <div class="text-center mb-8">
-        <i class="fas fa-bottle-droplet text-4xl text-purple-600 mb-3"></i>
+        <Droplets class="w-10 h-10 text-purple-600 mx-auto mb-3" />
         <h2 class="text-3xl font-medium text-gray-800 mb-2">Mot de passe oublié</h2>
         <p class="text-gray-500 text-sm">{{ sousTitre }}</p>
       </div>
@@ -15,7 +15,8 @@
         :class="toast.succes ? 'bg-green-100 border-green-400 text-green-700' : 'bg-red-100 border-red-400 text-red-700'"
         class="border px-4 py-3 rounded-lg mb-6 flex items-center space-x-2"
       >
-        <i :class="toast.succes ? 'fas fa-check-circle' : 'fas fa-exclamation-circle'"></i>
+        <CheckCircle v-if="toast.succes" class="w-5 h-5" />
+        <AlertCircle v-else class="w-5 h-5" />
         <span>{{ toast.message }}</span>
       </div>
 
@@ -27,7 +28,7 @@
           </label>
           <div class="relative">
             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <i class="fas fa-user text-gray-400"></i>
+              <User class="w-4 h-4 text-gray-400" />
             </div>
             <input
               v-model="form.identifier"
@@ -36,8 +37,8 @@
               class="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-300 focus:border-purple-400"
             >
           </div>
-          <p class="text-xs text-gray-400 mt-1">
-            <i class="fas fa-info-circle mr-1"></i>
+          <p class="text-xs text-gray-400 mt-1 flex items-center gap-1">
+            <Info class="w-3 h-3" />
             Entrez l'email ou le contact associé à votre compte
           </p>
         </div>
@@ -45,9 +46,9 @@
         <button
           @click="verifierIdentifiant"
           :disabled="chargement"
-          class="w-full py-3 px-4 rounded-md text-sm font-medium text-white bg-purple-700 hover:bg-purple-800 transition disabled:opacity-50 flex items-center justify-center"
+          class="w-full py-3 px-4 rounded-md text-sm font-medium text-white bg-purple-700 hover:bg-purple-800 transition disabled:opacity-50 flex items-center justify-center gap-2"
         >
-          <i v-if="chargement" class="fas fa-spinner fa-spin mr-2"></i>
+          <Loader v-if="chargement" class="w-4 h-4 animate-spin" />
           {{ chargement ? 'Vérification...' : 'Continuer' }}
         </button>
       </div>
@@ -56,16 +57,17 @@
       <div v-if="etape === 2" class="space-y-5">
 
         <!-- Info compte trouvé -->
-        <div class="bg-purple-50 border border-purple-200 text-purple-700 px-4 py-3 rounded-lg text-sm">
-          <i class="fas fa-user-check mr-2"></i>
+        <div class="bg-purple-50 border border-purple-200 text-purple-700 px-4 py-3 rounded-lg text-sm flex items-center gap-2">
+          <UserCheck class="w-4 h-4 flex-shrink-0" />
           Compte trouvé pour <strong>{{ form.identifier }}</strong>
         </div>
 
+        <!-- Nouveau mot de passe -->
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">Nouveau mot de passe</label>
           <div class="relative">
             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <i class="fas fa-lock text-gray-400"></i>
+              <Lock class="w-4 h-4 text-gray-400" />
             </div>
             <input
               v-model="form.newPassword"
@@ -73,18 +75,23 @@
               placeholder="••••••••"
               class="block w-full pl-10 pr-10 py-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-300 focus:border-purple-400"
             >
-            <button @click="voirPassword = !voirPassword" type="button"
-              class="absolute inset-y-0 right-0 pr-3 flex items-center">
-              <i :class="voirPassword ? 'fas fa-eye-slash' : 'fas fa-eye'" class="text-gray-400 hover:text-gray-600"></i>
+            <button
+              @click="voirPassword = !voirPassword"
+              type="button"
+              class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
+            >
+              <Eye v-if="!voirPassword" class="w-4 h-4" />
+              <EyeOff v-else class="w-4 h-4" />
             </button>
           </div>
         </div>
 
+        <!-- Confirmer mot de passe -->
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">Confirmer le mot de passe</label>
           <div class="relative">
             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <i class="fas fa-lock text-gray-400"></i>
+              <Lock class="w-4 h-4 text-gray-400" />
             </div>
             <input
               v-model="form.confirmPassword"
@@ -92,55 +99,67 @@
               placeholder="••••••••"
               class="block w-full pl-10 pr-10 py-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-300 focus:border-purple-400"
             >
-            <button @click="voirConfirm = !voirConfirm" type="button"
-              class="absolute inset-y-0 right-0 pr-3 flex items-center">
-              <i :class="voirConfirm ? 'fas fa-eye-slash' : 'fas fa-eye'" class="text-gray-400 hover:text-gray-600"></i>
+            <button
+              @click="voirConfirm = !voirConfirm"
+              type="button"
+              class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
+            >
+              <Eye v-if="!voirConfirm" class="w-4 h-4" />
+              <EyeOff v-else class="w-4 h-4" />
             </button>
           </div>
-          <!-- Indicateur de correspondance -->
+
+          <!-- Indicateur correspondance -->
           <p
             v-if="form.confirmPassword"
             :class="form.newPassword === form.confirmPassword ? 'text-green-600' : 'text-red-500'"
-            class="text-xs mt-1"
+            class="text-xs mt-1 flex items-center gap-1"
           >
-            <i :class="form.newPassword === form.confirmPassword ? 'fas fa-check' : 'fas fa-times'" class="mr-1"></i>
-            {{ form.newPassword === form.confirmPassword ? 'Les mots de passe correspondent' : 'Les mots de passe ne correspondent pas' }}
+            <CheckCircle v-if="form.newPassword === form.confirmPassword" class="w-3 h-3" />
+            <AlertCircle v-else class="w-3 h-3" />
+            {{ form.newPassword === form.confirmPassword ? 'Les mots de passe correspondent' : 'Ne correspondent pas' }}
           </p>
         </div>
 
         <button
           @click="reinitialiser"
           :disabled="chargement"
-          class="w-full py-3 px-4 rounded-md text-sm font-medium text-white bg-purple-700 hover:bg-purple-800 transition disabled:opacity-50 flex items-center justify-center"
+          class="w-full py-3 px-4 rounded-md text-sm font-medium text-white bg-purple-700 hover:bg-purple-800 transition disabled:opacity-50 flex items-center justify-center gap-2"
         >
-          <i v-if="chargement" class="fas fa-spinner fa-spin mr-2"></i>
+          <Loader v-if="chargement" class="w-4 h-4 animate-spin" />
           {{ chargement ? 'Réinitialisation...' : 'Réinitialiser le mot de passe' }}
         </button>
 
-        <button @click="etape = 1" class="w-full py-2 text-sm text-gray-500 hover:text-purple-600 transition">
-          <i class="fas fa-arrow-left mr-1"></i>Retour
+        <button
+          @click="etape = 1"
+          class="w-full py-2 text-sm text-gray-500 hover:text-purple-600 transition flex items-center justify-center gap-1"
+        >
+          <ArrowLeft class="w-3 h-3" />Retour
         </button>
       </div>
 
       <!-- ETAPE 3 : Succès -->
       <div v-if="etape === 3" class="text-center space-y-4">
         <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto">
-          <i class="fas fa-check text-4xl text-green-600"></i>
+          <Check class="w-10 h-10 text-green-600" />
         </div>
         <h3 class="text-xl font-bold text-gray-800">Mot de passe réinitialisé !</h3>
         <p class="text-gray-500">Votre mot de passe a été modifié avec succès.</p>
         <RouterLink
           to="/login"
-          class="inline-block w-full py-3 px-4 rounded-md text-sm font-medium text-white bg-purple-700 hover:bg-purple-800 transition text-center"
+          class="inline-flex items-center justify-center gap-2 w-full py-3 px-4 rounded-md text-sm font-medium text-white bg-purple-700 hover:bg-purple-800 transition"
         >
-          <i class="fas fa-sign-in-alt mr-2"></i>Se connecter
+          <LogIn class="w-4 h-4" />Se connecter
         </RouterLink>
       </div>
 
       <!-- Retour connexion -->
       <div v-if="etape !== 3" class="mt-6 text-center">
-        <RouterLink to="/login" class="text-sm text-purple-600 hover:text-purple-800">
-          <i class="fas fa-arrow-left mr-1"></i>Retour à la connexion
+        <RouterLink
+          to="/login"
+          class="text-sm text-purple-600 hover:text-purple-800 flex items-center justify-center gap-1"
+        >
+          <ArrowLeft class="w-3 h-3" />Retour à la connexion
         </RouterLink>
       </div>
 
@@ -149,8 +168,19 @@
 </template>
 
 <script>
+import {
+  Droplets, User, UserCheck, Lock,
+  Eye, EyeOff, Loader, CheckCircle,
+  AlertCircle, ArrowLeft, Check, LogIn, Info
+} from 'lucide-vue-next'
+
 export default {
   name: 'MotDePasseOublieView',
+  components: {
+    Droplets, User, UserCheck, Lock,
+    Eye, EyeOff, Loader, CheckCircle,
+    AlertCircle, ArrowLeft, Check, LogIn, Info
+  },
   data() {
     return {
       etape: 1,
@@ -162,11 +192,7 @@ export default {
       chargement: false,
       voirPassword: false,
       voirConfirm: false,
-      toast: {
-        visible: false,
-        message: '',
-        succes: false
-      }
+      toast: { visible: false, message: '', succes: false }
     }
   },
   computed: {
@@ -182,6 +208,7 @@ export default {
       setTimeout(() => { this.toast.visible = false }, 3500)
     },
 
+    // ✅ Vérifie si le compte existe
     async verifierIdentifiant() {
       if (!this.form.identifier) {
         this.afficherToast('Veuillez entrer votre email ou numéro de téléphone')
@@ -189,17 +216,18 @@ export default {
       }
 
       this.chargement = true
-
       try {
-        // On envoie une requête pour vérifier si le compte existe
-        const response = await fetch('https://luxeparfum-backend.onrender.com/api/auth/resetPassword', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            identifier: this.form.identifier,
-            newPassword: 'VERIFY_ONLY'
-          })
-        })
+        const response = await fetch(
+          'https://luxeparfum-backend.onrender.com/api/auth/resetPassword',
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              identifier: this.form.identifier,
+              newPassword: 'CHECK_ONLY'
+            })
+          }
+        )
 
         if (response.status === 404) {
           this.afficherToast('Aucun compte associé à cet identifiant')
@@ -217,6 +245,7 @@ export default {
       }
     },
 
+    // ✅ Réinitialise le mot de passe
     async reinitialiser() {
       if (!this.form.newPassword) {
         this.afficherToast('Veuillez entrer un nouveau mot de passe')
@@ -232,23 +261,25 @@ export default {
       }
 
       this.chargement = true
-
       try {
-        const response = await fetch('https://luxeparfum-backend.onrender.com/api/auth/resetPassword', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            identifier: this.form.identifier,
-            newPassword: this.form.newPassword
-          })
-        })
+        const response = await fetch(
+          'https://luxeparfum-backend.onrender.com/api/auth/resetPassword',
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              identifier: this.form.identifier,  // ✅ un seul champ
+              newPassword: this.form.newPassword
+            })
+          }
+        )
 
         const data = await response.json()
 
         if (response.ok) {
           this.etape = 3
         } else {
-          this.afficherToast(data.error || 'Erreur lors de la réinitialisation')
+          this.afficherToast(data.error || data.message || 'Erreur lors de la réinitialisation')
         }
 
       } catch (error) {
