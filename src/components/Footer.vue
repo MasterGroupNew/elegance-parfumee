@@ -51,7 +51,7 @@
             </li>
             <li class="flex items-center">
               <Phone class="w-4 h-4 mr-2 text-gray-400"></Phone>
-              <span>+225 07 07 07 07 07</span>
+              <span>+225 07 00 94 72 63 </span>
             </li>
             <li class="flex items-center">
               <i class="fas fa-envelope mr-2"></i>
