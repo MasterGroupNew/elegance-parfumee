@@ -66,7 +66,7 @@
                   </div>
                 </div>
               </td>
-              <td class="px-6 py-4 text-sm text-gray-600">{{ produit.categorie?.nom || '-' }}</td>
+              <td class="px-6 py-4 text-sm text-gray-600">{{ produit.categorie?.nom || produit.Category?.nom || '-' }}</td>
               <td class="px-6 py-4">
                 <span
                   :class="produit.genre === 'Homme' ? 'bg-blue-100 text-blue-700' : produit.genre === 'Femme' ? 'bg-pink-100 text-pink-700' : 'bg-gray-100 text-gray-700'"
@@ -192,14 +192,27 @@
                   <option value="Unisexe">Unisexe</option>
                 </select>
               </div>
+
+              <!-- ✅ NOUVEAU : Select catégorie dynamique -->
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Catégorie ID</label>
-                <input
-                  v-model="formProduit.categoryId"
-                  type="number"
-                  placeholder="Ex: 1"
+                <label class="block text-sm font-medium text-gray-700 mb-1">
+                  Catégorie <span class="text-red-500">*</span>
+                </label>
+                <select
+                  v-model="formProduit.categorie"
                   class="w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-300"
                 >
+                  <option value="">
+                    {{ chargementCategories ? 'Chargement...' : 'Sélectionner une catégorie' }}
+                  </option>
+                  <option
+                    v-for="cat in categories"
+                    :key="cat.id"
+                    :value="cat.nom"
+                  >
+                    {{ cat.nom }}
+                  </option>
+                </select>
               </div>
             </div>
 
@@ -443,7 +456,6 @@
               <X class="w-4 h-4" />Annuler
             </button>
 
-            <!-- Bouton changer caméra (avant/arrière) -->
             <button
               @click="changerCamera"
               class="py-3 px-4 bg-gray-800 hover:bg-gray-700 text-white rounded-lg transition flex items-center justify-center gap-2"
@@ -489,9 +501,13 @@ export default {
   data() {
     return {
       produits: [],
+      // ✅ NOUVEAU : liste des catégories
+      categories: [],
       chargement: true,
       chargementModal: false,
       chargementSuppression: false,
+      // ✅ NOUVEAU : état de chargement des catégories
+      chargementCategories: false,
       modalOuvert: false,
       modeEdition: false,
       modeImage: 'url',
@@ -501,25 +517,48 @@ export default {
       produitASupprimer: null,
       formProduit: {
         nom: '', description: '', prix: '',
-        quantite: '', genre: '', categoryId: '', imagePath: ''
+        quantite: '', genre: '', categorie: '', imagePath: ''
       },
       toast: { visible: false, message: '', succes: false },
       // Caméra
       cameraOuverte: false,
       streamCamera: null,
-      facingMode: 'environment' // caméra arrière par défaut
+      facingMode: 'environment'
     }
   },
+
   async mounted() {
-    await this.chargerProduits()
+    // ✅ Chargement en parallèle : produits + catégories
+    await Promise.all([this.chargerProduits(), this.chargerCategories()])
   },
+
   beforeUnmount() {
     this.arreterStream()
   },
+
   methods: {
     afficherToast(message, succes = false) {
       this.toast = { visible: true, message, succes }
       setTimeout(() => { this.toast.visible = false }, 3500)
+    },
+
+    // ─── CATÉGORIES ────────────────────────────────────────────
+    // ✅ NOUVELLE MÉTHODE : charge les catégories depuis l'API
+    async chargerCategories() {
+      this.chargementCategories = true
+      try {
+        const response = await fetch('https://luxeparfum-backend.onrender.com/api/categories/get_categories')
+        if (response.ok) {
+          const data = await response.json()
+          this.categories = Array.isArray(data) ? data : []
+        } else {
+          console.error('Erreur chargement catégories:', response.status)
+        }
+      } catch (error) {
+        console.error('Erreur réseau catégories:', error)
+      } finally {
+        this.chargementCategories = false
+      }
     },
 
     // ─── CAMÉRA ────────────────────────────────────────────────
@@ -531,9 +570,7 @@ export default {
 
     async demarrerStream() {
       try {
-        // Arrêter le stream précédent si existe
         this.arreterStream()
-
         const stream = await navigator.mediaDevices.getUserMedia({
           video: {
             facingMode: this.facingMode,
@@ -541,9 +578,7 @@ export default {
             height: { ideal: 720 }
           }
         })
-
         this.streamCamera = stream
-
         if (this.$refs.videoCamera) {
           this.$refs.videoCamera.srcObject = stream
         }
@@ -555,7 +590,6 @@ export default {
     },
 
     async changerCamera() {
-      // Basculer entre caméra avant et arrière
       this.facingMode = this.facingMode === 'environment' ? 'user' : 'environment'
       await this.demarrerStream()
     },
@@ -571,7 +605,6 @@ export default {
 
         const ctx = canvas.getContext('2d')
 
-        // Miroir si caméra frontale
         if (this.facingMode === 'user') {
           ctx.translate(canvas.width, 0)
           ctx.scale(-1, 1)
@@ -579,12 +612,10 @@ export default {
 
         ctx.drawImage(video, 0, 0)
 
-        // Convertir en base64
         const photoBase64 = canvas.toDataURL('image/jpeg', 0.9)
         this.aperçuUpload = photoBase64
         this.formProduit.imagePath = photoBase64
 
-        // Convertir base64 en fichier pour l'envoi
         canvas.toBlob((blob) => {
           this.fichierImage = new File([blob], 'photo.jpg', { type: 'image/jpeg' })
         }, 'image/jpeg', 0.9)
@@ -635,7 +666,8 @@ export default {
           prix: produit.prix,
           quantite: produit.quantite,
           genre: produit.genre,
-          categoryId: produit.categoryId || '',
+          // ✅ Supporte categorie.nom direct ou via l'objet Category associé
+          categorie: produit.categorie?.nom || produit.Category?.nom || '',
           imagePath: produit.imagePath || ''
         }
       } else {
@@ -679,7 +711,14 @@ export default {
     },
 
     async sauvegarderProduit() {
-      if (!this.formProduit.nom || !this.formProduit.prix || !this.formProduit.quantite || !this.formProduit.genre) {
+      // ✅ Validation complète incluant categoryId
+      if (
+        !this.formProduit.nom ||
+        !this.formProduit.prix ||
+        !this.formProduit.quantite ||
+        !this.formProduit.genre ||
+        !this.formProduit.categorie
+      ) {
         this.afficherToast('Veuillez remplir tous les champs obligatoires')
         return
       }
@@ -703,7 +742,8 @@ export default {
           formData.append('prix', Number(this.formProduit.prix))
           formData.append('quantite', Number(this.formProduit.quantite))
           formData.append('genre', this.formProduit.genre)
-          formData.append('categoryId', Number(this.formProduit.categoryId) || '')
+          // ✅ categoryId garanti non vide grâce à la validation au-dessus
+          formData.append('categorie', this.formProduit.categorie)
           formData.append('image', this.fichierImage)
 
           response = await fetch(url, {
@@ -726,7 +766,8 @@ export default {
               prix: Number(this.formProduit.prix),
               quantite: Number(this.formProduit.quantite),
               genre: this.formProduit.genre,
-              categoryId: Number(this.formProduit.categoryId) || null,
+              // ✅ envoie le nom de la catégorie, le backend fait findOrCreate
+              categorie: this.formProduit.categorie,
               imagePath: this.formProduit.imagePath
             })
           })
@@ -746,6 +787,7 @@ export default {
 
       } catch (error) {
         this.afficherToast('Erreur réseau')
+        console.error('Erreur sauvegarde:', error)
       } finally {
         this.chargementModal = false
       }
@@ -779,6 +821,7 @@ export default {
         }
       } catch (error) {
         this.afficherToast('Erreur réseau')
+        console.error('Erreur suppression:', error)
       } finally {
         this.chargementSuppression = false
       }
